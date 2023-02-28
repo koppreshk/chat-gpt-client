@@ -1,4 +1,4 @@
-import { ChatWindow } from "./chat-winow";
+import { ChatWindow } from "./chat-window";
 
 export default function App() {
 
