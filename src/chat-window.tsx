@@ -1,12 +1,12 @@
 import styled from "@emotion/styled";
 import React, { FormEvent, useState } from "react"
-import { Button, TextField } from "@mui/material";
+import { Button, LinearProgress, TextField } from "@mui/material";
 import SendIcon from '@mui/icons-material/Send';
 import { FlexBox } from "./common";
 import { ChatHistory } from "./chat-history";
 
 const Wrapper = styled.div`
-    width: 700px;
+    width: 100%;
     height: 100%;
     display: flex;
     align-items: center;
@@ -19,11 +19,12 @@ export type Chat = {
 }
 
 const StyledTextArea = styled(TextField)`
-    width: calc(100% - 30px);    
+    width: calc(100% - 30px);  
+    max-width: 600px;
 `;
 
 const Menu = styled(FlexBox)`
-    width: 260px;
+    width: 17%;
     height: 100%;
     background-color: #202123;
 `;
@@ -31,10 +32,11 @@ const Menu = styled(FlexBox)`
 export const ChatWindow = React.memo(() => {
     const [prompt, setPrompt] = useState("");
     const [chatResponse, setResponse] = useState<Chat[]>([]);
+    const [isLoading, setIsLoading] = React.useState(false);
 
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
+        setIsLoading(true);
         // Send a request to the server with the prompt
         fetch("https://chat-gpt-server-one.vercel.app/chat", {
             body: JSON.stringify({ prompt: prompt }),
@@ -45,8 +47,12 @@ export const ChatWindow = React.memo(() => {
         })
             .then((res) => {
                 return (res.text());
-            }).then((res) => setResponse([...chatResponse, { userQuestion: prompt, modelResponse: res }]))
+            }).then((res) => {
+                setIsLoading(false);
+                setResponse([...chatResponse, { userQuestion: prompt, modelResponse: res }])
+            })
             .catch((err) => {
+                setIsLoading(false);
                 console.error(err);
             });
     };
@@ -54,9 +60,10 @@ export const ChatWindow = React.memo(() => {
     return (
         <FlexBox width="100%" height="100%">
             <Menu></Menu>
-            <FlexBox justifyContent="center" width="calc(100% - 340px)" height="calc(100% - 80px)" padding="40px">
+            <FlexBox justifyContent="center" width="83%" height="calc(100% - 80px)">
                 <FlexBox flexDirection="column" width="100%" height="100%">
                     <ChatHistory chat={chatResponse} />
+                    {isLoading && <LinearProgress />}
                     <form onSubmit={handleSubmit}>
                         <Wrapper>
                             <StyledTextArea
